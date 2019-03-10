@@ -1,0 +1,312 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+
+class balanceObject
+{
+public:
+	float income;
+	
+	balanceObject()
+	{
+		income = 0.0;
+	}
+
+	void addIncome(float amt)
+	{
+		income += amt;
+	}
+
+	void removeIncome(float amt)
+	{
+		cout << "Remove called, removing: " << amt << endl;
+		income = income - amt;
+		cout << "Income: " << income << endl;
+	}
+
+	void displayIncome()
+	{
+		cout << "Income: " << income << endl;
+	}
+};
+
+
+class expenseObject
+{
+public:
+	float price;
+	string catagory;
+	string date;
+
+	expenseObject(float priceI, string catagoryI, string dateI)
+	{
+		price = priceI;
+		catagory = catagoryI;
+		date = dateI;
+	}
+
+	expenseObject()
+	{
+	}
+
+	bool isNewer(expenseObject &compare, expenseObject &newN) //is new more recent
+	{
+		int dateArrayC[3];
+		dateArrayC[0] = stoi(compare.date.substr(0, 2));
+		dateArrayC[1] = stoi(compare.date.substr(3, 2));
+		dateArrayC[2] = stoi(compare.date.substr(6, 4));
+
+		int dateArrayN[3];
+		dateArrayN[0] = stoi(newN.date.substr(0, 2)); //month
+		dateArrayN[1] = stoi(newN.date.substr(3, 2)); //day
+		dateArrayN[2] = stoi(newN.date.substr(6, 4)); //year
+
+		//cout << dateArrayC[0] << " " << dateArrayC[1] << " " << dateArrayC[2] << endl;
+		//cout << dateArrayN[0] << " " << dateArrayN[1] << " " << dateArrayN[2] << endl;
+
+		if (dateArrayN[2] > dateArrayC[2]) //if new node year is newer than Compare node year
+		{
+			//cout << "True" << endl;
+			return true;
+		}
+		else if (dateArrayN[0] > dateArrayC[0]) //if new node month is newer than Compare node month
+		{
+			//cout << "True" << endl;
+			return true;
+		}
+		else if (dateArrayN[1] > dateArrayC[1]) //if new node day is newer than Compare node day
+		{
+			//cout << "True" << endl;
+			return true;
+		}
+		else
+		{
+			//cout << "False" << endl;
+			return false;
+		}
+	}
+
+
+	void sortVector(vector<expenseObject> &theVector)
+	{
+		for(int i = 0; i < theVector.size()-1; i++)
+		{
+			for (int j = i+1; j < theVector.size(); j++)
+			{
+				if (isNewer(theVector[i], theVector[j])) //if j is more recent than i
+				{
+					if (isNewer(theVector[i], theVector[j]))
+					{
+						cout << theVector[j].date << " is more recent than " << theVector[i].date << endl;
+					}
+					expenseObject temp = theVector[i];
+					cout << endl << endl << endl << "Here is date vector i: " << temp.date << endl;
+					cout << "Here is date vector j: " << theVector[j].date << endl;
+					theVector[i] = theVector[j];
+					theVector[j] = temp;
+				}
+			}
+		}
+	}
+
+	//subtract from balance
+	void addExpense(expenseObject &obj, vector<expenseObject> &theVector, balanceObject& balanceObj)
+	{
+		cout << "Enter price: ";
+		cin >> price;
+		cin.ignore(20, '\n');
+		cout << "Enter catagory: ";
+		getline(cin, catagory);
+		cout << "Enter date: ";
+		getline(cin, date);
+
+		obj.price = price;
+		obj.catagory = catagory;
+		obj.date = date;
+
+		//cout << price << " ";
+		//cout << catagory << " ";
+		//cout << date << " " << endl;
+
+		if (theVector.empty())
+		{
+			//cout << "it is empty" << endl;
+			theVector.push_back(obj);
+		}
+		else
+		{
+			theVector.push_back(obj);
+			sortVector(theVector);
+		}
+		balanceObj.removeIncome(price);
+	}
+
+	//add back to balance
+	void deleteExpense(vector<expenseObject> &theVector, int location, balanceObject& balanceObj)
+	{
+		vector<expenseObject>::iterator t = theVector.begin() + location;
+		balanceObj.addIncome(theVector[location-1].price);
+		theVector.erase(t);
+	}
+
+	void displayExpense(expenseObject &obj, vector<expenseObject> &theVector)
+	{
+		for (int i = 0; i < theVector.size(); i++)
+		{
+			cout << theVector[i].price << endl;
+			cout << theVector[i].catagory << endl;
+			cout << theVector[i].date << endl;
+		}
+	}
+
+};
+
+class goalObject
+{
+public:
+	int priority;
+	float cost, allocatedSofar;
+	string name, dateHappen;
+
+	goalObject()
+	{
+		allocatedSofar = 0;
+	}
+
+	void fixPriority(vector<goalObject> &theVector)
+	{
+		for (int j = 0; j < theVector.size(); j++) //change priority of all vectors to that which its index is plus one, don't want to start at 0 priority
+		{
+			theVector[j].priority = j+1;
+		}
+	}
+
+	void addGoal(goalObject &obj, vector<goalObject> &theVector)
+	{
+		cout << "Enter name: ";
+		getline(cin, name);
+		cout << "Enter total cost: ";
+		cin >> cost;
+		cin.ignore(20, '\n');
+		//cout << "Enter date it will happen: ";
+		//getline(cin, dateHappen);
+		cout << "Enter priority: ";
+		cin >> priority;
+		cin.ignore(20, '\n');
+		
+
+		obj.name = name;
+		obj.cost = cost;
+		obj.dateHappen = dateHappen;
+		obj.priority = priority;
+
+
+		if (theVector.empty())
+		{
+			//cout << "it is empty" << endl;
+			obj.priority = 1;
+			theVector.push_back(obj);
+		}
+		else
+		{
+			//cout << "it is not empty" << endl;
+			//cout << theVector.size() << endl;
+			bool alreadyAdded = false;
+
+			int origSize = theVector.size();
+			for (int i = 0; i < origSize; i++)
+			{
+				if (theVector[i].priority == obj.priority) // if new object has same priority
+				{
+					theVector.insert(theVector.begin() + i, obj); //add it to where its priority is
+					alreadyAdded = true;
+					i++;
+				}
+			}
+			fixPriority(theVector); //change the priorities
+
+			if (alreadyAdded == false)
+			{
+				theVector.push_back(obj);
+				obj.priority = theVector.size();
+			}
+
+		}
+	}
+
+	void displayGoal(goalObject &obj, vector<goalObject> &theVector)
+	{
+		for (int i = 0; i < theVector.size(); i++)
+		{
+			cout << theVector[i].name << endl;
+			cout << theVector[i].dateHappen << endl;
+			cout << theVector[i].cost << endl;
+			cout << theVector[i].allocatedSofar << endl;
+		}
+	}
+
+	//add back to balance
+	void deleteGoal(vector<goalObject> &theVector, int location, balanceObject& balanceObj)
+	{
+		vector<goalObject>::iterator t = theVector.begin() + location;
+		balanceObj.addIncome(theVector[location-1].allocatedSofar);
+		theVector.erase(t);
+		fixPriority(theVector);
+	}
+
+	//remove from balance
+	void addFunds(vector<goalObject> &theVector, int location, float moneyAdd, balanceObject& balanceObj)
+	{
+		balanceObj.removeIncome(moneyAdd);
+		theVector[location - 1].allocatedSofar = theVector[location - 1].allocatedSofar + moneyAdd;
+	}
+
+};
+
+
+
+int main()
+{
+	balanceObject implementationBalance;
+
+	expenseObject implementationWant;
+	vector<expenseObject> wantVector;
+
+	expenseObject implementationAdd;
+	vector<expenseObject> addVector;
+
+	goalObject implementationGoal;
+	vector<goalObject> goalVector;
+
+	float firstIncome;
+
+	cout << "Enter income: ";
+	cin >> firstIncome;
+	implementationBalance.addIncome(firstIncome);
+	implementationWant.addExpense(implementationWant, wantVector, implementationBalance);
+	implementationWant.addExpense(implementationWant, wantVector, implementationBalance);
+	implementationWant.displayExpense(implementationWant, wantVector);
+	//implementationGoal.addGoal(implementationGoal, goalVector);
+	//implementationGoal.displayGoal(implementationGoal, goalVector);
+	implementationBalance.displayIncome();
+
+	//implementationGoal.addGoal(implementationGoal, goalVector);
+	//implementationGoal.addGoal(implementationGoal, goalVector);
+	//implementationGoal.addGoal(implementationGoal, goalVector);
+	//implementationGoal.displayGoal(implementationGoal, goalVector);
+	//implementationGoal.displayGoal(implementationGoal, goalVector);
+	//implementationGoal.addFunds(goalVector, 1, 50.0, implementationBalance);
+	//implementationBalance.displayIncome();
+	//implementationGoal.displayGoal(implementationGoal, goalVector);
+	//implementationGoal.deleteGoal(goalVector, 1, implementationBalance);
+	//implementationBalance.displayIncome();
+
+
+
+
+	system("pause");
+	return 0;
+}
