@@ -2,11 +2,6 @@
 using namespace std;
 
 
-//############################################################
-
-
-
-
 balanceObject::balanceObject()
 {
     income = 0.0;
